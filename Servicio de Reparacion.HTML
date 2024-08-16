@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servicios de Reparación Willy e Hijos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+        .details {
+            text-align: left;
+            margin: 20px;
+            display: inline-block;
+            border: 1px solid #ddd;
+            padding: 10px;
+            width: 80%;
+            max-width: 600px;
+        }
+        .details textarea {
+            width: 100%;
+            height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div id="step1">
+        <h1>Servicios de Reparación Willy e Hijos</h1>
+        <button onclick="showStep('alternador')">Alternador</button>
+        <button onclick="showStep('arranque')">Arranque</button>
+    </div>
+    
+    <div id="step2" class="hidden">
+        <h1 id="serviceTitle"></h1>
+        <input type="text" id="numeracion" placeholder="Ingrese la numeración">
+        <button onclick="showDetails()">Ver Detalles</button>
+        <button onclick="showStep('step1')">Volver al Paso 1</button>
+    </div>
+    
+    <div id="details" class="hidden">
+        <h1>Detalles de la Reparación</h1>
+        <div class="details">
+            <p id="detailsText"></p>
+            <textarea id="detailsInput" placeholder="Modificar descripciones de fallas..."></textarea>
+            <button onclick="saveDetails()">Guardar Cambios</button>
+        </div>
+        <button onclick="showStep('step1')">Volver al Paso 1</button>
+    </div>
+
+    <script>
+        let serviceType = '';
+        const storageKey = 'reparaciones';
+
+        // Initialize or load stored details
+        function loadStoredDetails() {
+            const stored = localStorage.getItem(storageKey);
+            if (stored) {
+                return JSON.parse(stored);
+            }
+            return {};
+        }
+
+        function saveToLocalStorage(data) {
+            localStorage.setItem(storageKey, JSON.stringify(data));
+        }
+
+        function showStep(step) {
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('details').classList.add('hidden');
+            
+            if (step === 'step1') {
+                document.getElementById('step1').classList.remove('hidden');
+            } else if (step === 'alternador' || step === 'arranque') {
+                serviceType = step;
+                document.getElementById('serviceTitle').textContent = `Detalles de ${step.charAt(0).toUpperCase() + step.slice(1)}`;
+                document.getElementById('step2').classList.remove('hidden');
+            } else if (step === 'details') {
+                const storedDetails = loadStoredDetails();
+                const numeracion = document.getElementById('numeracion').value;
+                const detailsText = storedDetails[`${serviceType}-${numeracion}`] || `Detalles de la reparación del ${serviceType} con numeración ${numeracion}.`;
+                document.getElementById('detailsText').textContent = detailsText;
+                document.getElementById('detailsInput').value = detailsText;
+                document.getElementById('details').classList.remove('hidden');
+            }
+        }
+        
+        function showDetails() {
+            const numeracion = document.getElementById('numeracion').value;
+            
+            if (numeracion) {
+                showStep('details');
+            } else {
+                alert('Por favor, ingrese una numeración.');
+            }
+        }
+        
+        function saveDetails() {
+            const numeracion = document.getElementById('numeracion').value;
+            const updatedDetails = document.getElementById('detailsInput').value;
+
+            if (numeracion) {
+                const storedDetails = loadStoredDetails();
+                storedDetails[`${serviceType}-${numeracion}`] = updatedDetails;
+                saveToLocalStorage(storedDetails);
+                document.getElementById('detailsText').textContent = updatedDetails;
+            } else {
+                alert('Por favor, ingrese una numeración.');
+            }
+        }
+    </script>
+</body>
+</html>
